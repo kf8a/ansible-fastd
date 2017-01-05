@@ -1,0 +1,16 @@
+---
+# common
+- hosts: all
+  roles:
+    - ufw
+
+  tasks:
+  - name: upgrade apt-cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: ensure that the system is up to date
+    apt: upgrade=dist
+
+  - name: ensure that my ssh keys are installed
+    authorized_key: user=vagrant
+                  key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

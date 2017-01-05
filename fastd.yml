@@ -1,0 +1,85 @@
+---
+# fastd
+- hosts: all
+  roles:
+    - ufw
+
+  tasks:
+    - include_vars: fastd.json
+
+    - name: add gpg key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 16EF3F64CB201D9C
+
+    - name: install apt-transport-https
+      apt:
+        package: apt-transport-https
+        state: latest
+
+    - name: add repository 
+      apt_repository:
+        repo: deb https://repo.universe-factory.net/debian/ sid main
+        state: present
+
+    - name: install fastd
+      apt: 
+        update_cache: yes
+        package: fastd 
+        state: latest
+
+
+    - name: create default config directory
+      file:
+        path: /etc/fastd/mesh-vpn
+        state: directory 
+        mode: 0700
+        owner: root
+        group: root
+
+    - name: create config file
+      template:
+        src: 'fastd.j2'
+        dest: '/etc/fastd/mesh-vpn/fastd.conf'
+        owner: root
+        group: root
+        mode: 600
+
+    - name: remove peer directory
+      file:
+        path: "/etc/fastd/mesh-vpn/peers"
+        state: absent
+
+    - name: create peer directory
+      file: 
+        path: /etc/fastd/mesh-vpn/peers 
+        state: directory 
+        mode: 0700
+        owner: root
+        group: root
+
+    - name: populate peers files
+      template:
+        src: "peer.j2"
+        dest: "{{ '/etc/fastd/mesh-vpn/peers/' + item }}"
+      with_inventory_hostnames: all
+      when: item != inventory_hostname
+
+    - name: enable fastd on startup
+      systemd:
+        name: fastd
+        state: started
+        enabled: True
+
+    - name: update firewall to allow connections from peers
+      ufw: 
+        rule: allow
+        port: 10000
+      #   from_ip: fastd[item]['remote_ip']
+      # with_inventory_hostnames: all
+      # when: item != inventory_hostname
+
+
+  handlers:
+    - name: restart fastd
+      service: name=fastd state=restarted

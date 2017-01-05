@@ -1,0 +1,11 @@
+- name: ensure that ufw is installed
+  apt: pkg=ufw state=latest
+
+- name: ufw allow ssh
+  ufw: rule=limit port=ssh proto=tcp
+
+- name: ufw logging off
+  ufw: logging=off
+
+- name: ufw enabled
+  ufw: state=enabled 
