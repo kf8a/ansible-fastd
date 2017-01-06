@@ -1,8 +1,8 @@
 ---
 # fastd
 - hosts: all
-   roles:
-   - ufw
+  roles:
+    - ufw
 
   tasks:
     - include_vars: fastd.json
@@ -58,12 +58,22 @@
         owner: root
         group: root
 
+    # - name: get current list of peer files
+    #   shell: ls -1 /etc/fastd/mesh-vpn/peers
+    #   register: contents
+    #
+    # - name: delete peer files not in the current set
+    #   file: path=/some/dir/{{ item }} state=absent
+    #   with_items: contents.stdout_lines
+    #   when: item not in inventory_hostnames: all
+
     - name: populate peers files
       template:
         src: "peer.j2"
         dest: "{{ '/etc/fastd/mesh-vpn/peers/' + item }}"
       with_inventory_hostnames: all
       when: item != inventory_hostname
+      notify: restart fastd
 
     - name: enable fastd on startup
       systemd:

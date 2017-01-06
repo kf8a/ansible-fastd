@@ -24,7 +24,7 @@ mtu 1426;
 
 on up "
 #  ip link set up $INTERFACE
-  /sbin/ifconfig mesh-vpn {{ fastd[inventory_hostname]['ip'] }}
+  /sbin/ifconfig mesh-vpn {{ vpn_ip  }}
 #   ip link set up dev $INTERFACE
  ";
 

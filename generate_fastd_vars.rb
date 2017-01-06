@@ -21,7 +21,6 @@ def skip_comments_and_group_lines(line)
 end
 
 def main(filename)
-  ip = 1
   vars = {}
   File.open(filename).each do |line|
     next if skip_comments_and_group_lines line
@@ -29,10 +28,7 @@ def main(filename)
     host = line.split[0]
 
     vars[host] = generate_keys.inject(:merge)
-    vars[host][:ip] = "10.61.0.#{ip}"
     vars[host][:remote] = Resolv.getaddress host
-
-    ip += 1
   end
 
   File.write('fastd.json', { fastd: vars }.to_json)
