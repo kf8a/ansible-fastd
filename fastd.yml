@@ -1,8 +1,8 @@
 ---
 # fastd
 - hosts: all
-  roles:
-    - ufw
+   roles:
+   - ufw
 
   tasks:
     - include_vars: fastd.json
@@ -71,13 +71,14 @@
         state: started
         enabled: True
 
+
     - name: update firewall to allow connections from peers
       ufw: 
         rule: allow
         port: 10000
-      #   from_ip: fastd[item]['remote_ip']
-      # with_inventory_hostnames: all
-      # when: item != inventory_hostname
+        src: "{{ fastd[item]['remote'] }}"
+      with_inventory_hostnames: all
+      when: item != inventory_hostname
 
 
   handlers:
